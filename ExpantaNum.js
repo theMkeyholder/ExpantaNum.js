@@ -5,7 +5,7 @@
 
 
   // --  EDITABLE DEFAULTS  -- //
-    var ExpantaNum = {
+    var OmegaExpantaNum = {
 
       // The rounding mode used by default by `toInteger`, `toDecimalPlaces`, `toExponential`,
       // `toFixed`, `toPrecision` and `toSignificantDigits`.
@@ -48,22 +48,22 @@
 
     external = true,
 
-    expantaNumError = "[ExpantaNumError] ",
-    invalidArgument = expantaNumError + "Invalid argument: ",
+    omegaExpantaNumError = "[OmegaExpantaNumError] ",
+    invalidArgument = omegaExpantaNumError + "Invalid argument: ",
 
-    isExpantaNum = /^[-\+]*(Infinity|NaN|(J+|J\^\d+ )?(10(\^+|\{[1-9]\d*\})|\(10(\^+|\{[1-9]\d*\})\)\^[1-9]\d* )*((\d+(\.\d*)?|\d*\.\d+)?([Ee][-\+]*))*(0|\d+(\.\d*)?|\d*\.\d+))$/,
+    isOmegaExpantaNum = /^[-\+]*(Infinity|NaN|(J+|J\^\d+ )?(10(\^+|\{[1-9]\d*\})|\(10(\^+|\{[1-9]\d*\})\)\^[1-9]\d* )*((\d+(\.\d*)?|\d*\.\d+)?([Ee][-\+]*))*(0|\d+(\.\d*)?|\d*\.\d+))$/,
 
     MAX_SAFE_INTEGER = 9007199254740991,
     MAX_E = Math.log10(MAX_SAFE_INTEGER), //15.954589770191003
 
-    // ExpantaNum.prototype object
+    // OmegaExpantaNum.prototype object
     P={},
-    // ExpantaNum static object
+    // OmegaExpantaNum static object
     Q={},
-    // ExpantaNum constants
+    // OmegaExpantaNum constants
     R={};
 
-  // ExpantaNum prototype methods
+  // OmegaExpantaNum prototype methods
 
   /*
    *  absoluteValue             abs
@@ -142,7 +142,7 @@
     return x;
   };
   Q.absoluteValue=Q.abs=function(x){
-    return new ExpantaNum(x).abs();
+    return new OmegaExpantaNum(x).abs();
   };
   P.negate=P.neg=function (){
     var x=this.clone();
@@ -150,26 +150,32 @@
     return x;
   };
   Q.negate=Q.neg=function (x){
-    return new ExpantaNum(x).neg();
+    return new OmegaExpantaNum(x).neg();
   };
   P.compareTo=P.cmp=function (other){
-    other=new ExpantaNum(other);
+    other=new OmegaExpantaNum(other);
     if (isNaN(this.array[0][1])||isNaN(other.array[0][1])) return NaN;
-    if (this.array[0][1]==Infinity&&other.array[0][1]!=Infinity) return this.sign;
-    if (this.array[0][1]!=Infinity&&other.array[0][1]==Infinity) return -other.sign;
+    if (this.array[0][1]<0&&other.array[0][1]>=0) return this.sign;
+    if (this.array[0][1]>=0&&other.array[0][1]<0) return -other.sign;
     if (this.array.length==1&&this.array[0][1]===0&&other.array.length==1&&other.array[0][1]===0) return 0;
     if (this.sign!=other.sign) return this.sign;
     var m=this.sign;
     var r;
-    if (this.layer>other.layer) r=1;
-    else if (this.layer<other.layer) r=-1;
+    if (this.layer>other.layer&&other.layer>=0) r=1;
+    else if (this.layer<other.layer&&this.layer>=0) r=-1;
     else{
       var e,f;
+     // Codemark 1
       for (var i=0,l=Math.min(this.array.length,other.array.length);i<l;++i){
         e=this.array[this.array.length-1-i];
         f=other.array[other.array.length-1-i];
         if (e[0]>f[0]||e[0]==f[0]&&e[1]>f[1]){
           r=1;
+          if (e[0]<0 && f[0]<0){
+            if (abs(f[0]) > abs(e[0])){
+            r=-1
+            } 
+          }
           break;
         }else if (e[0]<f[0]||e[0]==f[0]&&e[1]<f[1]){
           r=-1;
@@ -199,14 +205,15 @@
     return r*m;
   };
   Q.compare=Q.cmp=function (x,y){
-    return new ExpantaNum(x).cmp(y);
+    return new OmegaExpantaNum(x).cmp(y);
   };
   P.greaterThan=P.gt=function (other){
     return this.cmp(other)>0;
   };
   Q.greaterThan=Q.gt=function (x,y){
-    return new ExpantaNum(x).gt(y);
+    return new OmegaExpantaNum(x).gt(y);
   };
+  //Cm2
   P.greaterThanOrEqualTo=P.gte=function (other){
     return this.cmp(other)>=0;
   };
